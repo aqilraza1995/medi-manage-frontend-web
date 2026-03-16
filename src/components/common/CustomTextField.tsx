@@ -1,36 +1,45 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { TextField, TextFieldProps, Typography, Box } from '@mui/material';
 
 type CustomTextFieldProps = TextFieldProps & {
-    label: string;
-    errorText?: string;
+  label: string;
+  errorText?: string;
+  type?: string;
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  value?: string | number;
+  size?: string;
+  variant?: string;
+  fullWidth?: boolean;
+  required?: boolean;
 };
 
 export const CustomTextField: React.FC<CustomTextFieldProps> = ({
-    label,
-    errorText,
-    ...props
+  label,
+  errorText,
+  type = "text",
+  onChange,
+  value,
+  size = "small",
+  variant = "outlined",
+  fullWidth = true,
+  required = false,
+  ...props
 }) => {
-    return (
-        <Box sx={{ mb: 2, width: '100%' }}>
-            <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: 'text.secondary' }}>
-                {label} {props.required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
-            </Typography>
-            <TextField
-                fullWidth
-                variant="outlined"
-                size="small"
-                error={!!errorText}
-                helperText={errorText}
-                {...props}
-                value={props.value === 0 && props.type === 'number' ? '' : (props.value !== undefined ? props.value : '')}
-                onChange={(e) => {
-                    // Allow typed clearing of '0' by just passing it through, let the parent component parse or cast it.
-                    if (props.onChange) {
-                        props.onChange(e);
-                    }
-                }}
-            />
-        </Box>
-    );
+  return (
+    <Box sx={{ mb: 2, width: '100%' }}>
+      <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: 'text.secondary' }}>
+        {label} {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
+      </Typography>
+      <TextField
+        fullWidth={fullWidth}
+        variant={variant}
+        size={size}
+        error={!!errorText}
+        helperText={errorText}
+        {...props}
+        value={value}
+        onChange={onChange}
+      />
+    </Box>
+  );
 };

@@ -60,7 +60,7 @@ export default function Login() {
           }}>
             <Box sx={{ position: 'absolute', top: 40, left: 40, zIndex: 10 }}>
               <Typography variant="h4" fontWeight="900" color="primary.main" sx={{ letterSpacing: '-0.5px' }}>
-                MedCloud+
+                Medi-manage
               </Typography>
             </Box>
             <motion.div
@@ -76,7 +76,6 @@ export default function Login() {
                 mb: 4,
                 bgcolor: 'transparent',
                 mixBlendMode: themeMode === 'dark' ? 'screen' : 'multiply',
-                filter: themeMode === 'dark' ? 'invert(1) hue-rotate(180deg)' : 'none',
               }}>
                 <Image
                   src="/auth_bg.png"
@@ -86,8 +85,11 @@ export default function Login() {
                   priority
                 />
               </Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom color="text.primary">
-                Smart Pharmacy Management
+
+
+
+              <Typography variant="h6" fontWeight="bold" gutterBottom color="text.primary">
+                Medi-manage
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Streamline your inventory, manage staff, and track sales in one powerful dashboard.

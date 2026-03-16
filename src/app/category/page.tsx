@@ -23,6 +23,14 @@ const DUMMY_CATEGORIES = [
     { id: '6', name: 'First Aid', company: 'FirstAid Inc', itemsCount: 42, status: 'Active' },
 ];
 
+const options = [
+    { id: 1, name: 'PharmaCorp' },
+    { id: 2, name: 'HealWell Labs' },
+    { id: 3, name: 'LifeSciences' },
+    { id: 4, name: 'MedLife' },
+    { id: 5, name: 'FirstAid Inc' }
+]
+
 export default function CategoryPage() {
     const [openAdd, setOpenAdd] = React.useState(false);
     const [newCategory, setNewCategory] = React.useState({ name: '', company: '', description: '' });
@@ -144,8 +152,10 @@ export default function CategoryPage() {
                         label="Assign to Company"
                         required
                         value={newCategory.company}
+                        labelKey='name'
+                        valueKey='id'
                         onChange={(e) => setNewCategory({ ...newCategory, company: String(e.target.value) })}
-                        options={['PharmaCorp', 'HealWell Labs', 'LifeSciences', 'MedLife', 'FirstAid Inc'].map(c => ({ label: c, value: c }))}
+                        options={options}
                     />
                     <CustomTextField
                         label="Description"

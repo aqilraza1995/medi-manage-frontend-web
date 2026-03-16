@@ -256,7 +256,7 @@ export const CustomTable: React.FC<CustomTableProps> = ({
 
                                             return [
                                                 <Chip
-                                                    key="first-tag"
+                                                    // key="first-tag"
                                                     label={firstLabel}
                                                     size="small"
                                                     {...getTagProps({ index: 0 })}
