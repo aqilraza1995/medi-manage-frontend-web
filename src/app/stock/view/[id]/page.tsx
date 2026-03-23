@@ -67,19 +67,19 @@ export default function ViewStockHistoryPage({ params }: { params: { id: string 
                     {DUMMY_PARENT_ITEM.item}
                 </Typography>
                 <Grid container spacing={4}>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Company</Typography>
                         <Typography variant="body1" fontWeight="bold">{DUMMY_PARENT_ITEM.company}</Typography>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Current Total Stock</Typography>
                         <Typography variant="body1" fontWeight="bold">{DUMMY_PARENT_ITEM.totalStock} Units</Typography>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Status</Typography>
                         <Typography variant="body1" fontWeight="bold" color="success.main">{DUMMY_PARENT_ITEM.status}</Typography>
                     </Grid>
-                    <Grid item xs={6} sm={3}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
                         <Typography variant="caption" color="text.secondary">Times Added</Typography>
                         <Typography variant="body1" fontWeight="bold">{DUMMY_HISTORY.length} Batches</Typography>
                     </Grid>

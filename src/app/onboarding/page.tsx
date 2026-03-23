@@ -69,7 +69,8 @@ export default function Onboarding() {
 
 
   const handleSubmit = (e: React.FormEvent) => {
-    router.push('/dashboard');
+    e.preventDefault();
+    router.push('/onboarding/subscription');
   };
 
   return (
@@ -171,7 +172,7 @@ export default function Onboarding() {
                   <CustomTextField
                     label="Store Name"
                     name="storeName"
-                    required
+                    // required
                     fullWidth
                     placeholder="e.g. Apollo Pharmacy"
                   />
@@ -180,7 +181,7 @@ export default function Onboarding() {
                   <CustomTextField
                     label="Owner Name"
                     name="ownerName"
-                    required
+                    // required
                     fullWidth
                     placeholder="John Doe"
                   />
@@ -192,7 +193,7 @@ export default function Onboarding() {
                     labelKey='name'
                     valueKey='id'
                     options={stateOption}
-                    required
+                    // required
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -208,7 +209,7 @@ export default function Onboarding() {
                   <CustomTextField
                     label="Pincode"
                     name="pincode"
-                    required
+                    // required
                     fullWidth
                     placeholder="400001"
                   />
@@ -217,7 +218,7 @@ export default function Onboarding() {
                   <CustomTextField
                     label="Contact Phone"
                     name="phone"
-                    required
+                    // required
                     fullWidth
                     placeholder="+91 9876543210"
                   />
@@ -227,7 +228,7 @@ export default function Onboarding() {
                   <CustomTextField
                     label="Full Address"
                     name="address"
-                    required
+                    // required
                     fullWidth
                     multiline
                     rows={3}

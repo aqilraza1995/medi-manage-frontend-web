@@ -31,6 +31,7 @@ interface SidebarProps {
 
 const MENU_ITEMS = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Users', icon: <PeopleIcon />, path: '/user' },
     { text: 'Shops', icon: <StoreIcon />, path: '/shop/list' },
     { text: 'Inventory', icon: <InventoryIcon />, path: '/stock/list' },
     { text: 'Sales', icon: <PointOfSaleIcon />, path: '/sales' },
