@@ -11,6 +11,8 @@ type CustomSelectProps = SelectProps & {
   errorText?: string;
   labelKey: string;
   valueKey: string;
+  name: string;
+  required: boolean;
 };
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -20,17 +22,21 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   value,
   valueKey,
   labelKey,
+  name,
+  required = false,
   ...props
 }) => {
   return (
     <Box sx={{ mb: 2, width: '100%', minWidth: 120 }}>
       <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500, color: 'text.secondary' }}>
-        {label} {props.required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
+        {label} {required && <Box component="span" sx={{ color: 'error.main' }}>*</Box>}
       </Typography>
       <FormControl fullWidth size="small" error={!!errorText}>
         <Select
+          name={name}
           value={value ?? ''}
           displayEmpty
+          error={errorText !== "" ? true : false}
           {...props}
         >
           {/* Default empty selection text if no value is matched */}
