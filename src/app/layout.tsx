@@ -4,6 +4,8 @@ import "./globals.css";
 import { ReduxProvider } from "@/store/ReduxProvider";
 import MUIThemeProvider from "@/theme/MUIThemeProvider";
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +26,16 @@ export default function RootLayout({
           <ReduxProvider>
             <MUIThemeProvider>
               {children}
+              <ToastContainer
+                position="bottom-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={true}
+                closeOnClick
+                pauseOnHover
+                draggable
+                theme="light"
+              />
             </MUIThemeProvider>
           </ReduxProvider>
         </AppRouterCacheProvider>
