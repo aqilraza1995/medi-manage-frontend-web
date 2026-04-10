@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -17,122 +17,75 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Switch,
   Alert,
   IconButton,
-  Grow
 } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, Close } from '@mui/icons-material';
 import { CustomButton } from '@/components/common/CustomButton';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
 
-type PlanId = 'basic' | 'standard' | 'premium';
-type DurationType = 1 | 3 | 6 | 12;
+import { PlanData } from '@/types/planType';
+import { updateUser } from '@/store/slices/userSlice';
+import { AppDispatch, RootState } from '@/store/store';
+import { getAllActivePlans } from '@/store/slices/planSlice';
+import { createSubscription } from '@/store/slices/subscriptionSlice';
 
-interface Plan {
-  id: PlanId;
-  name: string;
-  description: string;
-  isRecommended?: boolean;
-  maxStores: string | number;
-  features: string[];
-  durations: DurationType[];
-  pricing: Record<DurationType, { monthly: number; total: number }>;
-}
-
-const plans: Plan[] = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    description: 'Perfect for small medical stores starting their journey.',
-    maxStores: 1,
-    features: [
-      'Basic Analytics',
-      'Single User',
-      'Standard Support',
-      'Inventory Management',
-      'Daily Reports'
-    ],
-    durations: [1, 3, 6, 12],
-    pricing: {
-      1: { monthly: 0, total: 0 },
-      3: { monthly: 999, total: 2997 },
-      6: { monthly: 899, total: 5394 },
-      12: { monthly: 799, total: 9588 }
-    }
-  },
-  {
-    id: 'standard',
-    name: 'Standard',
-    description: 'Great for growing pharmacies with multiple staff.',
-    isRecommended: true,
-    maxStores: 5,
-    features: [
-      'Advanced Analytics',
-      'Multi-User Support',
-      'Priority Support',
-      'Inventory Management',
-      'Custom Reports',
-      'Supplier Integration'
-    ],
-    durations: [3, 6, 12],
-    pricing: {
-      1: { monthly: 0, total: 0 }, // Unused
-      3: { monthly: 1999, total: 5997 },
-      6: { monthly: 1799, total: 10794 },
-      12: { monthly: 1599, total: 19188 }
-    }
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    description: 'For large pharmacy chains requiring full control.',
-    maxStores: 'Unlimited',
-    features: [
-      'Enterprise Analytics',
-      'Unlimited Users',
-      '24/7 Dedicated Support',
-      'Multi-store Management',
-      'API Access',
-      'Custom Integrations'
-    ],
-    durations: [3, 6, 12],
-    pricing: {
-      1: { monthly: 0, total: 0 }, // Unused
-      3: { monthly: 3999, total: 11997 },
-      6: { monthly: 3599, total: 21594 },
-      12: { monthly: 3199, total: 38388 }
-    }
-  }
-];
 
 const Subscription = () => {
   const router = useRouter();
   const theme = useTheme();
+  const dispatch = useDispatch<AppDispatch>();
+  const { data } = useSelector((state: RootState) => state.plans);
+  const auth = JSON.parse(localStorage.getItem("loggedUser") || "null");
 
-  const [selectedPlan, setSelectedPlan] = useState<PlanId | null>(null);
-  const [selectedDuration, setSelectedDuration] = useState<DurationType | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
+  const [loader, setLLoader] = useState(false);
 
-  // const [showTotalPricing, setShowTotalPricing] = useState(false);
-  const [viewDetailsPlan, setViewDetailsPlan] = useState<Plan | null>(null);
+  const [viewDetailsPlan, setViewDetailsPlan] = useState<PlanData | null>(null);
   const [error, setError] = useState('');
 
-  const handleSelect = (planId: PlanId, duration: DurationType) => {
+  const displayPlans = React.useMemo(() => {
+    return data ? [...data].reverse() : [];
+  }, [data]);
+
+
+  const handleSelect = (planId: string, duration: number) => {
     setSelectedPlan(planId);
     setSelectedDuration(duration);
     setError('');
   };
 
-  const handleContinue = () => {
-    if (!selectedPlan || !selectedDuration) {
-      setError('Please select a plan and duration to continue.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+  const handleContinue = async () => {
+    try {
+      if (!selectedPlan || !selectedDuration) {
+        setError('Please select a plan and duration to continue.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setLLoader(true);
+      const result = await dispatch(createSubscription({ planId: selectedPlan, duration: selectedDuration })).unwrap();
+
+      if (result.success) {
+        const payload = { activeSubscription: result?.data?._id, }
+        await dispatch(updateUser({ id: auth?._id as string, data: payload })).unwrap()
+        toast.success("Subscription activated successfully!");
+        router.push('/dashboard');
+      }
+    } catch (error: unknown) {
+      toast.error((error as Error).message || "Failed to activate subscription");
+    } finally {
+      setLLoader(false);
     }
-    router.push('/dashboard');
   };
+
+  useEffect(() => {
+    const getPlanData = async () => await dispatch(getAllActivePlans()).unwrap()
+    getPlanData();
+  }, []);
 
   return (
     <Box sx={{
@@ -169,17 +122,13 @@ const Subscription = () => {
             )}
           </AnimatePresence>
         </Box>
-
         <Grid container spacing={4} alignItems="stretch" justifyContent="center">
-          {plans.map((plan, index) => {
-            const isPlanSelected = selectedPlan === plan.id;
-            // The currently viewed duration defaults to 12 if not selected
+          {displayPlans?.map((plan: PlanData, index: number) => {
+            const isPlanSelected = selectedPlan === plan?._id;
+            // The currently viewed duration defaults to 3 if not selected
             const activeDuration = isPlanSelected ? (selectedDuration || 3) : 3;
-            const isFree = plan.id === 'basic' && isPlanSelected && selectedDuration === 1;
-            // const hasPaidSelected = isPlanSelected && !isFree;
-            
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={plan.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={plan?._id}>
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -239,7 +188,7 @@ const Subscription = () => {
                               key={duration}
                               label={label}
                               clickable
-                              onClick={() => handleSelect(plan.id, duration)}
+                              onClick={() => handleSelect(plan?._id, duration)}
                               sx={{
                                 fontWeight: isSelected ? 'bold' : 'normal',
                                 bgcolor: isSelected ? 'primary.main' : 'action.hover',
@@ -260,7 +209,7 @@ const Subscription = () => {
 
                       <Box textAlign="center" mb={4} sx={{ minHeight: 70 }}>
                         <AnimatePresence mode="wait">
-                          {(plan.id === 'basic' && activeDuration === 1) ? (
+                          {( activeDuration === 1) ? (
                             <motion.div
                               key="free"
                               initial={{ opacity: 0, y: 10 }}
@@ -277,7 +226,6 @@ const Subscription = () => {
                             </motion.div>
                           ) : (
                             <motion.div
-                              // key={`${activeDuration}-${showTotalPricing}`}
                               key={`${activeDuration}`}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -285,12 +233,10 @@ const Subscription = () => {
                               transition={{ duration: 0.2 }}
                             >
                               <Typography variant="h3" fontWeight="900" color="text.primary">
-                                ₹{plan.pricing[activeDuration]['total'].toLocaleString()}
+                                ₹{plan.pricing[activeDuration]?.total.toLocaleString()}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                {/* {console.log("showTotalPricing :", showTotalPricing)} */}
-                                {/* {showTotalPricing ? `for ${activeDuration} months` : '/ month'} */}
-                                { `for ${activeDuration} months`}
+                                {`for ${activeDuration} months`}
                               </Typography>
                             </motion.div>
                           )}
@@ -302,7 +248,7 @@ const Subscription = () => {
                           {plan.features.slice(0, 4).map((feature, i) => (
                             <ListItem key={i} disableGutters sx={{ py: 1 }}>
                               <ListItemIcon sx={{ minWidth: 36 }}>
-                                <CheckCircleIcon color="primary" fontSize="small" />
+                                <CheckCircle color="primary" fontSize="small" />
                               </ListItemIcon>
                               <ListItemText
                                 primary={feature}
@@ -328,7 +274,8 @@ const Subscription = () => {
                                 fullWidth
                                 onClick={handleContinue}
                                 sx={{ py: 1.5, fontWeight: 'bold' }}
-                                color={isFree ? "success" : "primary"}
+                                color={activeDuration === 1 ? "success" : "primary"}
+                                loading={loader}
                               >
                                 Activate
                               </CustomButton>
@@ -382,7 +329,7 @@ const Subscription = () => {
             {viewDetailsPlan?.name} Plan Details
           </Typography>
           <IconButton onClick={() => setViewDetailsPlan(null)} size="small">
-            <CloseIcon />
+            <Close />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers sx={{ borderBottom: 'none' }}>
@@ -402,7 +349,7 @@ const Subscription = () => {
               {viewDetailsPlan?.features.map((feature, i) => (
                 <ListItem key={i} disableGutters sx={{ py: 0.75 }}>
                   <ListItemIcon sx={{ minWidth: 36 }}>
-                    <CheckCircleIcon color="primary" fontSize="small" />
+                    <CheckCircle color="primary" fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary={feature} />
                 </ListItem>

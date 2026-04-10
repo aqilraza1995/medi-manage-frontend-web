@@ -3,13 +3,17 @@ import authReducer from './slices/authSlice';
 import themeReducer from './slices/themeSlice';
 import locationReducer from './slices/locationSlice';
 import shopReducer from './slices/shopSlice';
+import planReducer from './slices/planSlice';
+import subscriptionReducer from './slices/subscriptionSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     theme: themeReducer,
     location: locationReducer,
-    shop: shopReducer
+    shop: shopReducer,
+    plans: planReducer,
+    subscription: subscriptionReducer,
   },
 });
 
