@@ -3,7 +3,7 @@ export interface CreateSubscrptionPayload {
     duration: number;
 }
 
-interface subscriptionData{
+export interface subscriptionData{
     _id?: string;
     userId: string;
     planId: string;
@@ -22,9 +22,34 @@ interface subscriptionData{
     };
 }
 
-export interface CreateSubscriptionResponse {
+export interface PopulateSubscriptionData{
+   _id?: string;
+    userId: {name:string, email:string, phone:string};
+    planId: {name:string };
+    startDate: string;
+    endDate: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+    isTrial: boolean;
+    duration: number;
+    planSnapshot: {
+        name: string;
+        duration: number;
+        price: number;
+        storeLimit: number;
+    };
+}
+
+export interface SubscriptionResponse {
   success: boolean;
   data: subscriptionData;
+  message?: string; 
+}
+
+export interface GetSubscriptionResponse {
+  success: boolean;
+  data: subscriptionData[];
   message?: string; 
 }
 
