@@ -8,3 +8,7 @@ export const createSubscriptionApi = (payload: CreateSubscrptionPayload) => {
 export const getSubscriptionApi = () => {
   return axiosInstance.get("/subscription")
 }
+
+export const deleteSubscriptionApi = (id: string) => {
+  return axiosInstance.delete(`/subscription/${id}`)
+}

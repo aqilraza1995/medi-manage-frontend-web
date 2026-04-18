@@ -1,29 +1,26 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { Typography, Box, Paper, Chip, IconButton } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+import { Delete } from '@mui/icons-material';
 
 import { AppDispatch, RootState } from '@/store/store';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { CustomTable } from '@/components/common/CustomTable';
-import { getSubscriptions } from '@/store/slices/subscriptionSlice';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { deleteSubscriptions, getSubscriptions } from '@/store/slices/subscriptionSlice';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PopulateSubscriptionData, subscriptionData } from '@/types/subscriptionType';
 
-const DUMMY_SUBSCRIPTIONS = [
-  { id: 'sub_1', user: 'Alice', plan: 'Premium Plan', startDate: '2026-01-01', endDate: '2026-12-31', status: 'Active' },
-  { id: 'sub_2', user: 'Smith', plan: 'Starter Plan', startDate: '2026-02-15', endDate: '2026-08-15', status: 'Active' },
-  { id: 'sub_3', user: 'Bob', plan: 'Enterprise Plan', startDate: '2025-01-01', endDate: '2025-12-31', status: 'Expired' },
-];
 
 export default function SubscriptionList() {
 
   const dispatch = useDispatch<AppDispatch>()
   const { data, loading } = useSelector((state: RootState) => state?.subscription)
-  console.log("data ======= :", data)
-
-
+  const [open, setOpen] = useState<boolean>(false)
+  const [id, setId] = useState<string>("")
+  const [referesh, setReferesh] = useState<boolean>(false)
 
   const columns = [
     { id: 'user', label: 'User Name', format: (val: string, row: PopulateSubscriptionData) => row?.userId?.name },
@@ -61,19 +58,36 @@ export default function SubscriptionList() {
       align: 'right' as const,
       format: (val: any, row: any) => (
         <Box>
-          <IconButton size="small" color="secondary"><EditIcon fontSize="small" /></IconButton>
+          <IconButton size="small" color="error" onClick={() => hanleOpenDeleteDialog(row?._id)}><Delete fontSize="small" /></IconButton>
         </Box>
       )
     }
   ];
 
+  const hanleOpenDeleteDialog = (deletableId: string) => {
+    setOpen(true)
+    setId(deletableId)
+  }
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await dispatch(deleteSubscriptions(id)).unwrap()
+      setReferesh(!referesh)
+      toast.success(res?.message || "Subscription delete succefully")
+    } catch (error: unknown) {
+      toast.error(error as string || "Somthing went wrong")
+    } finally {
+      setOpen(false);
+    }
+
+  }
+
   useEffect(() => {
     const getSubscriptionList = async () => {
-      const res = await dispatch(getSubscriptions()).unwrap()
-      console.log("useEffect res ===>", res)
+      await dispatch(getSubscriptions()).unwrap()
     }
     getSubscriptionList()
-  }, [])
+  }, [referesh])
 
   return (
     <DashboardLayout>
@@ -91,12 +105,21 @@ export default function SubscriptionList() {
       <Paper sx={{ p: 2, borderRadius: 3 }}>
         <CustomTable
           columns={columns}
-          // rows={DUMMY_SUBSCRIPTIONS}
           rows={data || []}
           searchPlaceholder="Search subscriptions by user or plan..."
           enableColumnToggle={true}
+          visibleColumnsCount={7}
         />
       </Paper>
+      <ConfirmDialog
+        open={open}
+        title="Confirm Deletion"
+        content={`Are you sure you want to permanently delete this  subscription? This action cannot be undone.`}
+        onClose={() => setOpen(false)}
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete Plan"
+        loading={loading}
+      />
     </DashboardLayout>
   );
 }

@@ -61,6 +61,7 @@ interface CustomTableProps {
   enableColumnToggle?: boolean;
   searchPlaceholder?: string;
   dropdownFilters?: DropdownFilter[];
+  visibleColumnsCount?: number;
 }
 
 export const CustomTable: React.FC<CustomTableProps> = ({
@@ -70,7 +71,8 @@ export const CustomTable: React.FC<CustomTableProps> = ({
   enableSearch = true,
   enableColumnToggle = false,
   searchPlaceholder = "Search records...",
-  dropdownFilters = []
+  dropdownFilters = [],
+  visibleColumnsCount=6
 }) => {
   const theme = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,7 +87,7 @@ export const CustomTable: React.FC<CustomTableProps> = ({
 
   // Column visibility state
   // Enforce max 6 visible by default
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(c => c.id).slice(0, 6));
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(c => c.id).slice(0, visibleColumnsCount));
   const [tempVisibleColumns, setTempVisibleColumns] = useState<string[]>(visibleColumns);
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
 
