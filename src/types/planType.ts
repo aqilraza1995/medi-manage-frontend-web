@@ -7,7 +7,7 @@ export interface PlanPricing {
 }
 
 export interface PlanData {
-  _id: string;
+  _id?: string;
   name: string;
   description: string;
   maxStores: number;
@@ -16,18 +16,30 @@ export interface PlanData {
   pricing: PlanPricing;
   isRecommended: boolean;
   isActive: boolean;
-  createdAt?: string; 
-  updatedAt: string;    
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdatePlanPayload {
+  planId: string;
+  data: PlanData;
 }
 
 export interface PlanResponse {
   success: boolean;
   data: PlanData[];
-  message?: string; 
+  message?: string;
+}
+
+export interface EditPlanResponse {
+  success: boolean;
+  data: PlanData;
+  message?: string;
 }
 
 export interface PlanState {
   loading: boolean;
+  editLoading?: boolean;
   error: string | null;
   success: boolean;
   data: PlanData[] | null;

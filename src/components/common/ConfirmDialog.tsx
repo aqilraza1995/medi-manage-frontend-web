@@ -7,6 +7,7 @@ import {
     DialogActions,
     Button
 } from '@mui/material';
+import { CustomButton } from './CustomButton';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -17,6 +18,7 @@ interface ConfirmDialogProps {
     confirmText?: string;
     cancelText?: string;
     confirmColor?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
+    loading?: boolean;
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -27,7 +29,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onConfirm,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
-    confirmColor = 'error'
+    confirmColor = 'error',
+    loading = false
 }) => {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
@@ -36,12 +39,19 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 <DialogContentText>{content}</DialogContentText>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} color="inherit">
+                <CustomButton onClick={onClose} color="inherit" variant="outlined">
                     {cancelText}
-                </Button>
-                <Button onClick={() => { onConfirm(); onClose(); }} color={confirmColor} variant="contained" disableElevation>
+                </CustomButton>
+                
+                <CustomButton
+                    onClick={onConfirm}
+                    color={confirmColor}
+                    variant="contained"
+                    disableElevation
+                    loading={loading}
+                >
                     {confirmText}
-                </Button>
+                </CustomButton>
             </DialogActions>
         </Dialog>
     );

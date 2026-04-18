@@ -188,7 +188,7 @@ const Subscription = () => {
                               key={duration}
                               label={label}
                               clickable
-                              onClick={() => handleSelect(plan?._id, duration)}
+                              onClick={() => handleSelect(plan?._id ?? "", duration)}
                               sx={{
                                 fontWeight: isSelected ? 'bold' : 'normal',
                                 bgcolor: isSelected ? 'primary.main' : 'action.hover',
