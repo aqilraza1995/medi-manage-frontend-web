@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation';
+import Shop from "@/features/Shop"
 
-export default function ShopRedirect() {
-    redirect('/shop/list');
+const ShopListPage = ()=>{
+    return <Shop />
 }
+
+export default ShopListPage

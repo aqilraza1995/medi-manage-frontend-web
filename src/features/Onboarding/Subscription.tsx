@@ -299,19 +299,6 @@ const Subscription = () => {
             );
           })}
         </Grid>
-
-        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <CustomButton
-              variant={selectedPlan ? "contained" : "outlined"}
-              size="large"
-              onClick={handleContinue}
-              sx={{ px: 8, py: 2, fontSize: '1.1rem', fontWeight: 'bold', borderRadius: 8 }}
-            >
-              {(selectedPlan === 'basic' && selectedDuration === 1) ? "Start for Free" : "Continue to Dashboard"}
-            </CustomButton>
-          </motion.div>
-        </Box>
       </motion.div>
 
       {/* Plan Details Dialog */}

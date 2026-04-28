@@ -1,8 +1,8 @@
 import React, { ChangeEvent } from 'react';
-import { TextField, TextFieldProps, Typography, Box } from '@mui/material';
+import { TextField, TextFieldProps, Typography, Box, InputAdornment, IconButton } from '@mui/material';
 
 type CustomTextFieldProps = TextFieldProps & {
-  label: string;
+  label?: string;
   errorText?: string;
   type?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -11,6 +11,9 @@ type CustomTextFieldProps = TextFieldProps & {
   variant?: string;
   fullWidth?: boolean;
   required?: boolean;
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  endIconClick?: () => void;
 };
 
 export const CustomTextField: React.FC<CustomTextFieldProps> = ({
@@ -23,6 +26,9 @@ export const CustomTextField: React.FC<CustomTextFieldProps> = ({
   variant = "outlined",
   fullWidth = true,
   required = false,
+  startIcon,
+  endIcon,
+  endIconClick,
   ...props
 }) => {
   return (
@@ -39,6 +45,21 @@ export const CustomTextField: React.FC<CustomTextFieldProps> = ({
         {...props}
         value={value}
         onChange={onChange}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              {startIcon}
+            </InputAdornment>
+          ),
+          endAdornment: value ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={endIconClick}>
+                {endIcon}
+              </IconButton>
+            </InputAdornment>
+          ) : null,
+          sx: { borderRadius: 2 }
+        }}
       />
     </Box>
   );
