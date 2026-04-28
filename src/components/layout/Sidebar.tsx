@@ -45,7 +45,7 @@ const MENU_GROUPS = [
   {
     title: 'OWNER',
     items: [
-      { text: 'Shops', icon: <StoreIcon />, path: '/shop/list' },
+      { text: 'Shops', icon: <StoreIcon />, path: '/shop' },
       { text: 'Staff', icon: <PeopleIcon />, path: '/staff' },
     ]
   },

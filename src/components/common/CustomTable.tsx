@@ -36,6 +36,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import ClearIcon from '@mui/icons-material/Clear';
+import { CustomTextField } from './CustomTextField';
 
 export interface Column {
   id: string;
@@ -211,34 +212,22 @@ export const CustomTable: React.FC<CustomTableProps> = ({
           {/* Left Side: Search & Filter Dropdowns */}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, flex: 1 }}>
             {enableSearch && (
-              <TextField
-                size="small"
+              <CustomTextField
+                size='small'
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   setPage(0);
                 }}
-                sx={{ minWidth: 250, bgcolor: 'background.paper', borderRadius: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon color="action" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: searchTerm ? (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => { setSearchTerm(''); setPage(0); }}>
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                  sx: { borderRadius: 2 }
-                }}
+                fullWidth={false}
+                startIcon={<SearchIcon color="action" />}
+                endIcon={<ClearIcon fontSize="small" />}
+                endIconClick={() => { setSearchTerm(''); setPage(0); }}
               />
             )}
 
-            {dropdownFilters.map((filter) => {
+            {/* {dropdownFilters.map((filter) => {
               const currentVal = activeFilters[filter.id] || [];
 
               return (
@@ -289,15 +278,15 @@ export const CustomTable: React.FC<CustomTableProps> = ({
                   />
                 </FormControl>
               );
-            })}
+            })} */}
 
-            {(Object.values(activeFilters).some(v => v.length > 0) || searchTerm) && (
+            {/* {(Object.values(activeFilters).some(v => v.length > 0) || searchTerm) && (
               <Tooltip title="Clear All Filters">
                 <IconButton onClick={clearFilters} color="error" size="small">
                   <ClearIcon />
                 </IconButton>
               </Tooltip>
-            )}
+            )} */}
           </Box>
 
           {/* Right Side: Column Toggles */}

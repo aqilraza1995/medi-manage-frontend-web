@@ -73,7 +73,7 @@ const Onboarding = () => {
     const selectedStateValue = e.target.value as string
     formik.setFieldValue("address.state", selectedStateValue)
     formik.setFieldValue("address.city", "")
-
+    
     if (selectedStateValue) {
       dispatch(setCitiesByState(selectedStateValue))
     } else {
@@ -239,7 +239,7 @@ const Onboarding = () => {
                       label="State"
                       name="address.state"
                       labelKey='name'
-                      valueKey='isoCode'
+                      valueKey='value'
                       options={states}
                       required
                       onChange={handleStateChange}

@@ -6,7 +6,8 @@ import { State, City } from "country-state-city";
 const initialState: LocationState = {
   states: State.getStatesOfCountry('IN').map(state => ({
     name: state.name,
-    isoCode: state.isoCode
+    isoCode: state.isoCode,
+    value: state.name
   })),
   cities: [],
 };
@@ -16,10 +17,14 @@ const locationSlice = createSlice({
   initialState,
   reducers: {
     setCitiesByState: (state, action: PayloadAction<string>) => {
-      const demo = City.getCitiesOfState('IN', action.payload).map(city => ({
-        name: city.name
-      }));
-      state.cities = City.getCitiesOfState('IN', action.payload).map(city => ({
+      const selectedState = state.states.find( (s) => s.name === action.payload );
+
+      if (!selectedState) {
+        state.cities = [];
+        return;
+      }
+
+      state.cities = City.getCitiesOfState('IN', selectedState.isoCode).map(city => ({
         name: city.name
       }));
     },
