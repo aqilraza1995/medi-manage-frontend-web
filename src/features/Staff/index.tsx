@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { format } from "date-fns"
 import { useRouter } from 'next/navigation';
+import { useDispatch, UseDispatch, useSelector } from 'react-redux';
 import { Typography, Box, Paper, IconButton, Chip } from '@mui/material';
 import { Edit, Add, Delete } from '@mui/icons-material';
 
@@ -9,61 +11,79 @@ import { CustomTable } from '@/components/common/CustomTable';
 import { CustomButton } from '@/components/common/CustomButton';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { AppDispatch, RootState } from '@/store/store';
+import { deleteStaff, getAllStaff } from '@/store/slices/staffSlice';
+import { staffData } from '@/types/staffType';
+import { toast } from 'react-toastify';
 
-
-const DUMMY_STAFF = [
-  { id: 1, name: 'Sarah Connor', owner: 'Alice Smith', role: 'Pharmacist', shop: 'Main City Pharmacy', phone: '+1 234 567 8001', active: true },
-  { id: 2, name: 'John Smith', owner: 'Alice Smith', role: 'Cashier', shop: 'Main City Pharmacy', phone: '+1 234 567 8002', active: true },
-  { id: 3, name: 'Emma Watson', owner: 'Bob Jones', role: 'Manager', shop: 'HealthPlus Suburb', phone: '+1 234 567 8003', active: false },
-  { id: 4, name: 'Michael Jordan', owner: 'Bob Jones', role: 'Delivery Agent', shop: 'CareMeds Central', phone: '+1 234 567 8004', active: true },
-];
 
 const Staff = () => {
 
-  const router = useRouter()    
-  const [openAdd, setOpenAdd] = React.useState(false);
-  const [editStaff, setEditStaff] = React.useState<any>(null);
-  const [deleteOption, setDeleteOption] = React.useState<any>(null);
+  const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
+  const { staff, loading } = useSelector((state: RootState) => state?.staff)
+  const [open, setOpen] = useState<boolean>(false)
+  const [refresh, setRefresh] = useState<boolean>(false)
+  const [selectedId, setSelectedId] = useState<string>("")
 
-  const openEditModal = (staff: any) => {
-    setEditStaff(staff);
-    setOpenAdd(true);
-  };
-
-  const handleCloseAdd = () => {
-    setOpenAdd(false);
-    setEditStaff(null);
-  };
 
   const columns = [
     { id: 'name', label: 'Staff Name' },
-    { id: 'role', label: 'Role' },
-    { id: 'shop', label: 'Assigned Shop' },
-    { id: 'owner', label: 'Owner' },
+    { id: 'shop', label: 'Assigned Shop', format: (value: string, row: staffData) => row?.shopId?.name },
+    { id: 'name', label: 'Joining', format: (value: string, row: staffData) => format(row?.createdAt, 'dd-MM-yyyy') },
     { id: 'phone', label: 'Phone' },
     {
       id: 'active',
       label: 'Status',
-      format: (val: boolean) => (
+      format: (value: string, row: staffData) => (
         <Chip
-          label={val ? 'Active' : 'Inactive'}
-          color={val ? 'success' : 'default'}
+          label={row?.status === "active" ? 'Active' : 'Inactive'}
+          color={row?.status === "active" ? 'success' : 'default'}
           size="small"
         />
       ),
     },
+    { id: 'role', label: 'Role' },
+    { id: 'owner', label: 'Owner', format: (value: string, row: staffData) => row?.ownerId?.name },
     {
       id: 'actions',
       label: 'Actions',
       align: 'right' as const,
       format: (val: any, row: any) => (
         <Box>
-          <IconButton size="small" color="primary" onClick={() => openEditModal(row)}><Edit fontSize="small" /></IconButton>
-          <IconButton size="small" color="error" onClick={() => setDeleteOption(row)}><Delete fontSize="small" /></IconButton>
+          <IconButton size="small" color="primary" onClick={() => router.push(`/staff/${row?._id}`)}><Edit fontSize="small" /></IconButton>
+          <IconButton size="small" color="error" onClick={() => handleOpenDeleteModal(row?._id)}><Delete fontSize="small" /></IconButton>
         </Box>
       )
     }
   ];
+
+  const handleOpenDeleteModal = (id: string) => {
+    setOpen(true)
+    setSelectedId(id)
+  }
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await dispatch(deleteStaff(selectedId)).unwrap()
+      setRefresh(!refresh)
+      toast.success(res?.message || "Staff delete successfully")
+
+    } catch (error) {
+      toast.error(error as string || "Somthing went wrong")
+    } finally {
+      setOpen(false);
+      setSelectedId("")
+    }
+  }
+
+  useEffect(() => {
+    const getData = async () => {
+      await dispatch(getAllStaff()).unwrap()
+    }
+    getData()
+  }, [refresh])
+
 
   return (
     <DashboardLayout>
@@ -84,25 +104,21 @@ const Staff = () => {
       <Paper sx={{ p: 2, borderRadius: 3 }}>
         <CustomTable
           columns={columns}
-          rows={DUMMY_STAFF}
+          rows={staff}
           searchPlaceholder="Search staff name, role, phone..."
           enableColumnToggle={true}
-          dropdownFilters={[
-            { id: 'shop', label: 'Filter by Shop', multiple: true, options: Array.from(new Set(DUMMY_STAFF.map(s => s.shop))).sort() }
-          ]}
         />
       </Paper>
 
       {/* Confirm Deletion */}
       <ConfirmDialog
-        open={!!deleteOption}
+        open={open}
         title="Confirm Removal"
-        content={`Are you sure you want to remove ${deleteOption?.name} from ${deleteOption?.shop}?`}
-        onClose={() => setDeleteOption(null)}
-        onConfirm={() => {
-          console.log("Deleted Staff:", deleteOption?.name);
-        }}
-        confirmText="Remove Staff"
+        content={'Are you sure you want to permanently delete this  staff? This action cannot be undone.'}
+        onClose={() => setOpen(false)}
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete Staff"
+        loading={loading}
       />
     </DashboardLayout>
   );

@@ -16,6 +16,7 @@ import {
   IconButton,
   Link as MuiLink,
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 
@@ -25,7 +26,6 @@ import { CustomButton } from '@/components/common/CustomButton';
 import { toggleTheme } from '@/store/slices/themeSlice';
 import { AppDispatch, RootState } from '@/store/store';
 import { loginUser } from '@/store/slices/authSlice';
-import { toast } from 'react-toastify';
 
 export default function LoginForm() {
   const router = useRouter();

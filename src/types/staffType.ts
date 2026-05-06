@@ -1,4 +1,6 @@
+
 export interface createStaffData {
+  id?:string;
   name: string;
   email?: string;
   phone:string
@@ -11,6 +13,38 @@ export interface createStaffData {
   shopId: string;
 }
 
+interface Owner{
+    [type:string]: string;
+}
+
+export interface staffData{
+   name: string;
+  email?: string;
+  phone:string;
+  ownerId:Owner;
+  shopId:Owner;
+  status:string;
+  createdAt:string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  },
+  _id:string;
+}
+
+export interface GetStaffResponse {
+    success: boolean;
+    data: staffData[] 
+}
+
+export interface GetStaffEditResponse {
+    success: boolean;
+    data: staffData 
+    message?:string;
+}
+
 export interface ResponseData {
   status: number | string;
   data: createStaffData
@@ -20,5 +54,10 @@ export interface ResponseData {
 export interface StaffInitialState {
   loading: boolean;
   error: string | null;
-  staff: createStaffData[]
+  staff: staffData[]
+}
+
+export interface updateStaffData {
+  id: string;
+  data: createStaffData
 }

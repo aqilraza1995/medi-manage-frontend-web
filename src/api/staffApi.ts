@@ -8,14 +8,22 @@ export const getAllStaffApi = () => {
   return axiosInstance.get("/staff")
 }
 
-export const getStaffByOwnerApi = (ownerId: string) => {
-  return axiosInstance.post(`/staff/${ownerId}`)
+export const getStaffByIdApi = (id: string) => {
+  return axiosInstance.get(`/staff/${id}`)
 }
 
-export const updateStaff = (id: string, data: any) => {
+export const getStaffByOwnerApi = (ownerId: string) => {
+  return axiosInstance.get(`/staff/owner/${ownerId}`)
+}
+
+export const getStaffByShopApi = (shopId: string) => {
+  return axiosInstance.get(`/staff/shop/${shopId}`)
+}
+
+export const updateStaffApi = (id: string, data: any) => {
   return axiosInstance.put(`/staff/${id}`, data)
 }
 
-export const deleteStaff = (id: string) => {
+export const deleteStaffApi = (id: string) => {
   return axiosInstance.delete(`/staff/${id}`)
 }

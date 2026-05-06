@@ -1,7 +1,7 @@
 'use client';
 
 import * as Yup from "yup"
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { toast } from 'react-toastify';
 import { useFormik, FormikProvider } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,22 +14,25 @@ import { CustomSelect } from '@/components/common/CustomSelect';
 import { CustomButton } from '@/components/common/CustomButton';
 import { AppDispatch, RootState } from '@/store/store';
 import { clearCities, setCitiesByState } from '@/store/slices/locationSlice';
-import { createShop, getShopsByOwnerId, updateShop } from '@/store/slices/shopSlice';
-import { createShopData } from '@/types/shopType';
-import { createStaff } from "@/store/slices/staffSlice";
+import { getShopsByOwnerId } from '@/store/slices/shopSlice';
+import { createStaff, getStaffById, updateStaff } from "@/store/slices/staffSlice";
 import { createStaffData } from "@/types/staffType";
 
 const AddEditStaff = () => {
   const router = useRouter();
   const { id } = useParams()
   const dispatch = useDispatch<AppDispatch>()
-  const { loading } = useSelector((state: RootState) => state?.shop)
   const { states, cities } = useSelector((state: RootState) => state.location)
-  const { shop } = useSelector((state: RootState) => state.shop)
-  const auth = JSON.parse(localStorage.getItem("loggedUser") || "null")
+  const { shop, loading } = useSelector((state: RootState) => state.shop)
 
+  const auth = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return JSON.parse(localStorage.getItem("loggedUser") || "null")
+    }
+    return null
+  }, [])
 
-  const validationSchema = Yup.object({
+  const validationSchema = useMemo(() => Yup.object({
     name: Yup.string().required("Name is required."),
     email: Yup.string().email("Invalid email"),
     phone: Yup.string().matches(/^[0-9]{10}$/, "Enter valid 10 digit number."),
@@ -40,7 +43,22 @@ const AddEditStaff = () => {
       city: Yup.string().required("Please select city."),
       pincode: Yup.string().required("Pincode is required."),
     })
-  })
+  }), [])
+
+  const handleSubmit = useCallback(async (values: createStaffData) => {
+    try {
+      if (!id) {
+        const res = await dispatch(createStaff(values)).unwrap()
+        toast.success(res?.message || "Staff created successfully!")
+      } else {
+        const res = await dispatch(updateStaff({ id: id as string, data: values })).unwrap()
+        toast.success(res?.message || "Staff updated successfully!")
+      }
+      router.push('/staff');
+    } catch (error: unknown) {
+      toast.error(error as string || "Failed to create staff. Please try again.")
+    }
+  }, [id, dispatch, router]);
 
   const formik = useFormik({
     initialValues: {
@@ -56,10 +74,12 @@ const AddEditStaff = () => {
       },
     },
     validationSchema,
-    onSubmit: (values) => handleSubmit(values)
+    onSubmit: handleSubmit,
+    validateOnChange: true,
+    validateOnBlur: true,
   })
 
-  const handleStateChange = (e: any) => {
+  const handleStateChange = useCallback((e: any) => {
     const selectedStateValue = e.target.value as string
     formik.setFieldValue("address.state", selectedStateValue)
     formik.setFieldValue("address.city", "")
@@ -68,78 +88,54 @@ const AddEditStaff = () => {
     } else {
       dispatch(clearCities());
     }
-  }
-
-  const handleSubmit = async (values: createStaffData) => {
-    try {
-      console.log("values ====>", values)
-      const payload = {
-        ...values,
-        email: values.email || undefined,
-        // phone: values.phone || undefined,
-      }
-      if (!id) {
-        const res = await dispatch(createStaff(values)).unwrap()
-        toast.success(res?.message || "Shop created successfully!")
-      }
-      else {
-
-        const res = await dispatch(updateShop({ id: id as string, data: payload })).unwrap()
-        toast.success(res?.message || "Shop updated successfully!")
-      }
-      router.push('/staff');
-
-    } catch (error: unknown) {
-      toast.error(error as string || "Failed to create shop. Please try again.")
-    }
-  };
-
-  //   useEffect(() => {
-  //     const getData = async () => {
-  //       const res = await dispatch(getShopsById(id as string)).unwrap()
-
-  //       const state = res?.data?.address?.state;
-  //       const city = res?.data?.address?.city;
-
-  //       formik.setFieldValue("name", res?.data?.name)
-  //       formik.setFieldValue("phone", res?.data?.phone)
-  //       formik.setFieldValue("email", res?.data?.email)
-  //       formik.setFieldValue("gst", res?.data?.gst)
-  //       formik.setFieldValue("address.street", res?.data?.address.street)
-  //       formik.setFieldValue("address.state", state)
-  //       formik.setFieldValue("address.pincode", res?.data?.address.pincode)
-
-  //       if (state) {
-  //         await dispatch(setCitiesByState(state));
-  //       }
-
-  //       formik.setFieldValue("address.city", city);
-  //     }
-  //     if (id) getData()
-  //   }, [])
+  }, [dispatch, formik])
 
   useEffect(() => {
-    const getShop = async () => {
-      await dispatch(getShopsByOwnerId(auth?._id)).unwrap()
+    if (auth?._id) {
+      dispatch(getShopsByOwnerId(auth._id))
     }
-    getShop()
-  }, [])
+  }, [auth?._id, dispatch])
 
+  useEffect(() => {
+    if (id) {
+      const getStaffData = async () => {
+        const res = await dispatch(getStaffById(id as string)).unwrap()
 
-  const { name, email, phone, address, shopId } = formik?.values
+        const state = res?.data?.address?.state;
+        const city = res?.data?.address?.city;
+
+        formik.setFieldValue("name", res?.data?.name)
+        formik.setFieldValue("shopId", res?.data?.shopId?._id)
+        formik.setFieldValue("phone", res?.data?.phone)
+        formik.setFieldValue("email", res?.data?.email)
+        formik.setFieldValue("address.street", res?.data?.address.street)
+        formik.setFieldValue("address.state", state)
+        formik.setFieldValue("address.pincode", res?.data?.address.pincode)
+
+        if (state) {
+          await dispatch(setCitiesByState(state));
+        }
+
+        formik.setFieldValue("address.city", city);
+
+      }
+      getStaffData()
+    }
+  }, [id])
 
   return (
     <DashboardLayout>
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box>
-          <Typography variant="h4" fontWeight="bold">{id ? "Update Staff" : "Add New Staff"}</Typography>
+          <Typography variant="h4" fontWeight="bold">
+            {id ? "Update Staff" : "Add New Staff"}
+          </Typography>
         </Box>
       </Box>
 
       <FormikProvider value={formik}>
-        <form onSubmit={formik?.handleSubmit}>
+        <form onSubmit={formik.handleSubmit}>
           <Grid container spacing={3}>
-            {/* Left Column: Basic Details */}
             <Grid size={{ xs: 12, md: 6 }}>
               <Paper sx={{ p: 4, borderRadius: 3, height: '100%' }}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
@@ -150,10 +146,10 @@ const AddEditStaff = () => {
                   required
                   name="name"
                   label="Name"
-                  placeholder="e.g. John Dou"
-                  value={name}
-                  onChange={formik?.handleChange}
-                  errorText={formik?.touched?.name && formik?.errors?.name ? formik?.errors?.name : ""}
+                  placeholder="e.g. John Doe"
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  errorText={formik.touched.name && formik.errors.name ? formik.errors.name : ""}
                 />
 
                 <CustomSelect
@@ -163,33 +159,34 @@ const AddEditStaff = () => {
                   options={(shop || []) as any}
                   labelKey="name"
                   valueKey="_id"
-                  value={shopId}
-                  onChange={formik?.handleChange}
-                  errorText={formik?.touched?.name && formik?.errors?.name ? formik?.errors?.name : ""}
+                  value={formik.values.shopId}
+                  onChange={formik.handleChange}
+                  errorText={formik.touched.shopId && formik.errors.shopId ? formik.errors.shopId : ""}
                 />
+
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <CustomTextField
                     name="phone"
                     required
                     label="Contact Phone"
                     placeholder="+91"
-                    value={phone}
-                    onChange={formik?.handleChange}
+                    value={formik.values.phone}
+                    onChange={formik.handleChange}
+                    errorText={formik.touched.phone && formik.errors.phone ? formik.errors.phone : ""}
                   />
                   <CustomTextField
                     name="email"
                     type="email"
                     label="Contact Email"
                     placeholder="staff@example.com"
-                    value={email}
-                    onChange={formik?.handleChange}
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    errorText={formik.touched.email && formik.errors.email ? formik.errors.email : ""}
                   />
                 </Box>
-
               </Paper>
             </Grid>
 
-            {/* Right Column: Location */}
             <Grid size={{ xs: 12, md: 6 }}>
               <Paper sx={{ p: 4, borderRadius: 3, height: '100%' }}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
@@ -202,10 +199,11 @@ const AddEditStaff = () => {
                   required
                   fullWidth
                   multiline
-                  value={address?.street}
+                  rows={3}
+                  value={formik.values.address.street}
                   placeholder="Shop No. 12, Main Street..."
-                  onChange={formik?.handleChange}
-                  errorText={formik?.touched?.address?.street && formik?.errors?.address?.street ? formik?.errors?.address?.street : ""}
+                  onChange={formik.handleChange}
+                  errorText={formik.touched.address?.street && formik.errors.address?.street ? formik.errors.address.street : ""}
                 />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
@@ -217,8 +215,8 @@ const AddEditStaff = () => {
                     options={states}
                     required
                     onChange={handleStateChange}
-                    value={address?.state}
-                    errorText={formik?.touched?.address?.state && formik?.errors?.address?.state ? formik?.errors?.address?.state : ""}
+                    value={formik.values.address.state}
+                    errorText={formik.touched.address?.state && formik.errors.address?.state ? formik.errors.address.state : ""}
                   />
                   <CustomSelect
                     label="City"
@@ -226,10 +224,10 @@ const AddEditStaff = () => {
                     valueKey='name'
                     name='address.city'
                     required
-                    value={address?.city}
+                    value={formik.values.address.city}
                     options={cities}
-                    onChange={formik?.handleChange}
-                    errorText={formik?.touched?.address?.city && formik?.errors?.address?.city ? formik?.errors?.address?.city : ""}
+                    onChange={formik.handleChange}
+                    errorText={formik.touched.address?.city && formik.errors.address?.city ? formik.errors.address.city : ""}
                   />
                 </Box>
 
@@ -239,21 +237,20 @@ const AddEditStaff = () => {
                   required
                   fullWidth
                   placeholder="400001"
-                  value={address?.pincode}
-                  onChange={formik?.handleChange}
-                  errorText={formik?.touched?.address?.pincode && formik?.errors?.address?.pincode ? formik?.errors?.address?.pincode : ""}
+                  value={formik.values.address.pincode}
+                  onChange={formik.handleChange}
+                  errorText={formik.touched.address?.pincode && formik.errors.address?.pincode ? formik.errors.address.pincode : ""}
                 />
               </Paper>
             </Grid>
 
-            {/* Actions */}
             <Grid size={{ xs: 12 }}>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 1 }}>
-                <CustomButton variant="outlined" size="large" onClick={() => router.push('/shop')}>
+                <CustomButton variant="outlined" size="large" onClick={() => router.push('/staff')}>
                   Cancel
                 </CustomButton>
                 <CustomButton loading={loading} type="submit" variant="contained" size="large">
-                  {id ? "Update Shop" : "Save Shop"}
+                  {id ? "Update Staff" : "Save Staff"}
                 </CustomButton>
               </Box>
             </Grid>
