@@ -1,4 +1,4 @@
-import { createShopApi, deleteShopApi, getShopApi, getShopByIdApi, updateshopApi } from "@/api/shopApi";
+import { createShopApi, deleteShopApi, getShopApi, getShopByIdApi, getShopByOwnerApi, updateshopApi } from "@/api/shopApi";
 import { createShopData, ResponseData, ShopInitialState, updateShopData } from "@/types/shopType";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
@@ -20,38 +20,51 @@ export const createShop = createAsyncThunk<ResponseData, createShopData, { rejec
     }
   })
 
-  export const getShops = createAsyncThunk<ResponseData, void, {rejectValue:string}>(
-    "shop/getShop",
-    async(_, {rejectWithValue})=>{
-      try {
-        const response = await getShopApi()
-        return response?.data as ResponseData
-      } catch (error: unknown) {
-        const err = error as AxiosError<{message:string}>
-        return rejectWithValue(err?.response?.data?.message || "Something went wrong");
-      }
+export const getShops = createAsyncThunk<ResponseData, void, { rejectValue: string }>(
+  "shop/getShop",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getShopApi()
+      return response?.data as ResponseData
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>
+      return rejectWithValue(err?.response?.data?.message || "Something went wrong");
     }
-  )
+  }
+)
 
-  export const getShopsById = createAsyncThunk<ResponseData, string, {rejectValue:string}>(
-    "shop/getShopByIdApi",
-    async(id, {rejectWithValue})=>{
-      try {
-        const response = await getShopByIdApi(id)
-        return response?.data as ResponseData
-      } catch (error: unknown) {
-        const err = error as AxiosError<{message:string}>
-        return rejectWithValue(err?.response?.data?.message || "Something went wrong");
-      }
+export const getShopsById = createAsyncThunk<ResponseData, string, { rejectValue: string }>(
+  "shop/getShopByIdApi",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await getShopByIdApi(id)
+      return response?.data as ResponseData
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>
+      return rejectWithValue(err?.response?.data?.message || "Something went wrong");
     }
-  )
+  }
+)
 
-  export const updateShop = createAsyncThunk<ResponseData, updateShopData, { rejectValue: string }>(
+export const getShopsByOwnerId = createAsyncThunk<ResponseData, string, { rejectValue: string }>(
+  "shop/getShopsByOwnerId",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await getShopByOwnerApi(id)
+      return response?.data as ResponseData
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>
+      return rejectWithValue(err?.response?.data?.message || "Something went wrong");
+    }
+  }
+)
+
+export const updateShop = createAsyncThunk<ResponseData, updateShopData, { rejectValue: string }>(
   "shop/updateShop",
-  async ({id, data}, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue }) => {
     try {
 
-      const response = await updateshopApi(id,data);
+      const response = await updateshopApi(id, data);
       return response.data as ResponseData;
 
     } catch (error: unknown) {
@@ -60,18 +73,18 @@ export const createShop = createAsyncThunk<ResponseData, createShopData, { rejec
     }
   })
 
-    export const deleteShop = createAsyncThunk<ResponseData, string, {rejectValue:string}>(
-    "shop/deleteShop",
-    async(id, {rejectWithValue})=>{
-      try {
-        const response = await deleteShopApi(id)
-        return response?.data as ResponseData
-      } catch (error: unknown) {
-        const err = error as AxiosError<{message:string}>
-        return rejectWithValue(err?.response?.data?.message || "Something went wrong");
-      }
+export const deleteShop = createAsyncThunk<ResponseData, string, { rejectValue: string }>(
+  "shop/deleteShop",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await deleteShopApi(id)
+      return response?.data as ResponseData
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message: string }>
+      return rejectWithValue(err?.response?.data?.message || "Something went wrong");
     }
-  )
+  }
+)
 
 
 const initialState: ShopInitialState = {
@@ -110,14 +123,14 @@ const shopSlice = createSlice({
       .addCase(getShops?.fulfilled, (state, action) => {
         state.loading = false
         state.success = true
-        state.shop = action?.payload?.data 
+        state.shop = action?.payload?.data
       })
       .addCase(getShops.rejected, (state, action) => {
         state.loading = false;
         state.error = action?.payload ?? "Something went wrong"
       })
 
-      //Edit Shop
+      //Get Shop By ShopId
       .addCase(getShopsById?.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -130,8 +143,22 @@ const shopSlice = createSlice({
         state.error = action?.payload ?? "Something went wrong"
       })
 
+      //Get Shop By OwnerId
+      .addCase(getShopsByOwnerId?.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getShopsByOwnerId?.fulfilled, (state, action) => {
+        state.loading = false
+        state.shop = action?.payload?.data
+      })
+      .addCase(getShopsByOwnerId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action?.payload ?? "Something went wrong"
+      })
+
       // Update Shop
-       .addCase(updateShop?.pending, (state) => {
+      .addCase(updateShop?.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -143,8 +170,8 @@ const shopSlice = createSlice({
         state.error = action?.payload ?? "Something went wrong"
       })
 
-       // Delete Shop
-       .addCase(deleteShop?.pending, (state) => {
+      // Delete Shop
+      .addCase(deleteShop?.pending, (state) => {
         state.loading = true;
         state.error = null;
       })

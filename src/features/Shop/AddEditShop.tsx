@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import * as Yup from "yup"
 import { toast } from 'react-toastify';
 import { useFormik, FormikProvider } from 'formik';
@@ -26,17 +26,19 @@ const AddEditShop = () => {
   const { loading } = useSelector((state: RootState) => state?.shop)
   const { states, cities } = useSelector((state: RootState) => state.location)
 
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Store name is required."),
-    email: Yup.string().email("Invalid email"),
-    phone: Yup.string().matches(/^[0-9]{10}$/, "Enter valid 10 digit number."),
-    address: Yup.object({
-      street: Yup.string().required("Address is required."),
-      state: Yup.string().required("Please select state."),
-      city: Yup.string().required("Please select city."),
-      pincode: Yup.string().required("Pincode is required."),
+  const validationSchema = useMemo(() => {
+    Yup.object({
+      name: Yup.string().required("Store name is required."),
+      email: Yup.string().email("Invalid email"),
+      phone: Yup.string().matches(/^[0-9]{10}$/, "Enter valid 10 digit number."),
+      address: Yup.object({
+        street: Yup.string().required("Address is required."),
+        state: Yup.string().required("Please select state."),
+        city: Yup.string().required("Please select city."),
+        pincode: Yup.string().required("Pincode is required."),
+      })
     })
-  })
+  }, [])
 
   const formik = useFormik({
     initialValues: {
@@ -55,7 +57,7 @@ const AddEditShop = () => {
     onSubmit: (values) => handleSubmit(values)
   })
 
-  const handleStateChange = (e: any) => {
+  const handleStateChange = useCallback((e: any) => {
     const selectedStateValue = e.target.value as string
     formik.setFieldValue("address.state", selectedStateValue)
     formik.setFieldValue("address.city", "")
@@ -64,9 +66,9 @@ const AddEditShop = () => {
     } else {
       dispatch(clearCities());
     }
-  }
+  }, [dispatch, formik])
 
-  const handleSubmit = async (values: createShopData) => {
+  const handleSubmit = useCallback(async (values: createShopData) => {
     try {
       const payload = {
         ...values,
@@ -87,7 +89,7 @@ const AddEditShop = () => {
     } catch (error: unknown) {
       toast.error(error as string || "Failed to create shop. Please try again.")
     }
-  };
+  }, [id, dispatch, router]);
 
   useEffect(() => {
     const getData = async () => {

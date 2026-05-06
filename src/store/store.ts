@@ -5,6 +5,7 @@ import locationReducer from './slices/locationSlice';
 import shopReducer from './slices/shopSlice';
 import planReducer from './slices/planSlice';
 import subscriptionReducer from './slices/subscriptionSlice';
+import staffReducer from "./slices/staffSlice"
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     shop: shopReducer,
     plans: planReducer,
     subscription: subscriptionReducer,
+    staff: staffReducer,
   },
 });
 
